@@ -87,6 +87,14 @@ infJumpBtn.Parent = background
 -- ฟังก์ชั่นสำหรับ Infinite Jump
 local infiniteJumpEnabled = false
 
+-- ฟังก์ชั่นทำให้กระโดดได้ในอากาศ
+local function enableAirJump()
+    local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+    humanoid.JumpHeight = 100  -- เพิ่มความสูงในการกระโดด
+    humanoid.UseJumpPower = false -- ใช้ JumpHeight แทน JumpPower
+    humanoid.AutoJumpEnabled = true  -- เปิดใช้งานการกระโดดโดยอัตโนมัติ
+end
+
 -- ติดตามการกระโดดของตัวละคร
 local function onJumpRequest()
     if infiniteJumpEnabled then
@@ -103,7 +111,8 @@ infJumpBtn.MouseButton1Click:Connect(function()
     infiniteJumpEnabled = not infiniteJumpEnabled
     infJumpBtn.Text = infiniteJumpEnabled and "Disable Jump" or "Infinite Jump"
     if infiniteJumpEnabled then
-        -- เปิดใช้งาน Infinite Jump
+        -- เปิดใช้งาน Infinite Jump และกระโดดได้ในอากาศ
+        enableAirJump()
         game:GetService("UserInputService").JumpRequest:Connect(onJumpRequest)
     else
         -- ปิดการใช้งาน Infinite Jump
