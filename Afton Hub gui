@@ -16,7 +16,7 @@ toggleButton.Parent = screenGui
 
 -- สร้างหน้าต่าง GUI หลัก
 local background = Instance.new("Frame")
-background.Size = UDim2.new(0, 300, 0, 250)
+background.Size = UDim2.new(0, 300, 0, 280)
 background.Position = UDim2.new(0.5, -150, 0.5, -125)
 background.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 background.Active = true
@@ -85,6 +85,17 @@ jumpBtn.TextTransparency = 1
 jumpBtn.BackgroundTransparency = 1
 jumpBtn.Parent = background
 
+-- ปุ่ม Infinity Jump
+local infJumpBtn = Instance.new("TextButton")
+infJumpBtn.Text = "Infinity Jump"
+infJumpBtn.Size = UDim2.new(0.8, 0, 0, 30)
+infJumpBtn.Position = UDim2.new(0.1, 0, 0.9, 0)
+infJumpBtn.Font = Enum.Font.GothamBold
+infJumpBtn.TextScaled = true
+infJumpBtn.TextTransparency = 1
+infJumpBtn.BackgroundTransparency = 1
+infJumpBtn.Parent = background
+
 -- เสียงคลิก
 local clickSound = Instance.new("Sound")
 clickSound.SoundId = "rbxassetid://9083627113"
@@ -93,6 +104,7 @@ clickSound.Parent = screenGui
 
 -- TweenService
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
 
 -- แอนิเมชั่นเปิดหัวข้อ
 local titleTweenIn = TweenService:Create(title, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -121,6 +133,26 @@ jumpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Infinity Jump Logic
+local infJumpEnabled = false
+infJumpBtn.MouseButton1Click:Connect(function()
+    clickSound:Play()
+    infJumpEnabled = not infJumpEnabled
+    infJumpBtn.Text = infJumpEnabled and "Infinity Jump: ON" or "Infinity Jump: OFF"
+end)
+
+UIS.JumpRequest:Connect(function()
+    if infJumpEnabled then
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
 -- เปิด/ปิด GUI พร้อมแอนิเมชั่น
 local isTweening = false
 local guiVisible = false
@@ -143,6 +175,9 @@ local tweenSpeedBoxOut = TweenService:Create(speedBox, TweenInfo.new(0.5), {Text
 local tweenJumpBoxIn = TweenService:Create(jumpBox, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0})
 local tweenJumpBoxOut = TweenService:Create(jumpBox, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1})
 
+local tweenInfJumpIn = TweenService:Create(infJumpBtn, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0})
+local tweenInfJumpOut = TweenService:Create(infJumpBtn, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1})
+
 toggleButton.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
@@ -159,10 +194,12 @@ toggleButton.MouseButton1Click:Connect(function()
         jumpBtn.TextTransparency = 1
         speedBox.TextTransparency = 1
         jumpBox.TextTransparency = 1
+        infJumpBtn.TextTransparency = 1
         speedBtn.BackgroundTransparency = 1
         jumpBtn.BackgroundTransparency = 1
         speedBox.BackgroundTransparency = 1
         jumpBox.BackgroundTransparency = 1
+        infJumpBtn.BackgroundTransparency = 1
 
         tweenGuiShow:Play()
         tweenTitleIn:Play()
@@ -170,6 +207,7 @@ toggleButton.MouseButton1Click:Connect(function()
         tweenJumpBtnIn:Play()
         tweenSpeedBoxIn:Play()
         tweenJumpBoxIn:Play()
+        tweenInfJumpIn:Play()
 
         task.delay(0.5, function()
             isTweening = false
@@ -180,6 +218,7 @@ toggleButton.MouseButton1Click:Connect(function()
         tweenJumpBtnOut:Play()
         tweenSpeedBoxOut:Play()
         tweenJumpBoxOut:Play()
+        tweenInfJumpOut:Play()
         tweenGuiHide:Play()
 
         tweenGuiHide.Completed:Wait()
