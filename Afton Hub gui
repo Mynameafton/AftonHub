@@ -75,15 +75,6 @@ jumpBtn.Font = Enum.Font.GothamBold
 jumpBtn.TextScaled = true
 jumpBtn.Parent = background
 
--- ปุ่ม Fly
-local flyBtn = Instance.new("TextButton")
-flyBtn.Text = "Fly"
-flyBtn.Size = UDim2.new(0.8, 0, 0, 30)
-flyBtn.Position = UDim2.new(0.1, 0, 0.9, 0)
-flyBtn.Font = Enum.Font.GothamBold
-flyBtn.TextScaled = true
-flyBtn.Parent = background
-
 -- ทำงานปุ่ม Speed
 speedBtn.MouseButton1Click:Connect(function()
 	local speed = tonumber(speedBox.Text)
@@ -96,7 +87,9 @@ end)
 jumpBtn.MouseButton1Click:Connect(function()
 	local jump = tonumber(jumpBox.Text)
 	if jump and game.Players.LocalPlayer.Character then
-		game.Players.LocalPlayer.Character:WaitForChild("Humanoid").JumpPower = jump
+		local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+		humanoid.UseJumpPower = true
+		humanoid.JumpPower = jump
 	end
 end)
 
@@ -106,94 +99,4 @@ toggleButton.MouseButton1Click:Connect(function()
 	guiVisible = not guiVisible
 	background.Visible = guiVisible
 	toggleButton.Text = guiVisible and "Hide GUI" or "Show GUI"
-end)
-
--- ระบบบิน
-local flying = false
-local currentDir = Vector3.new(0, 0, 0)
-local activeBtns = {}
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-local velocity = Instance.new("BodyVelocity")
-velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-velocity.Velocity = Vector3.new(0, 0, 0)
-velocity.P = 1250
-
-local gyro = Instance.new("BodyGyro")
-gyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-gyro.P = 3000
-gyro.CFrame = humanoidRootPart.CFrame
-
--- ปุ่มควบคุมมือถือ
-local controlFrame = Instance.new("Frame")
-controlFrame.Size = UDim2.new(0, 150, 0, 150)
-controlFrame.Position = UDim2.new(1, -160, 1, -160)
-controlFrame.BackgroundTransparency = 1
-controlFrame.Parent = screenGui
-controlFrame.Visible = false
-
-local function createControlBtn(name, text, pos, dir)
-	local btn = Instance.new("TextButton")
-	btn.Name = name
-	btn.Size = UDim2.new(0, 50, 0, 50)
-	btn.Position = pos
-	btn.Text = text
-	btn.TextScaled = true
-	btn.Font = Enum.Font.GothamBold
-	btn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-	btn.Parent = controlFrame
-	btn.AutoButtonColor = true
-	return btn, dir
-end
-
-local controls = {}
-controls["Up"] = {btn = createControlBtn("UpBtn", "↑", UDim2.new(0.33, 0, 0, 0), Vector3.new(0, 1, 0))}
-controls["Down"] = {btn = createControlBtn("DownBtn", "↓", UDim2.new(0.33, 0, 1, -50), Vector3.new(0, -1, 0))}
-controls["Left"] = {btn = createControlBtn("LeftBtn", "←", UDim2.new(0, 0, 0.33, 0), Vector3.new(-1, 0, 0))}
-controls["Right"] = {btn = createControlBtn("RightBtn", "→", UDim2.new(1, -50, 0.33, 0), Vector3.new(1, 0, 0))}
-controls["Forward"] = {btn = createControlBtn("ForwardBtn", "Fwd", UDim2.new(0.33, 0, 0.33, 0), Vector3.new(0, 0, -1))}
-controls["Back"] = {btn = createControlBtn("BackBtn", "Back", UDim2.new(0.33, 0, 0.66, 0), Vector3.new(0, 0, 1))}
-
-local function updateDir()
-	local newDir = Vector3.new(0, 0, 0)
-	for _, data in pairs(activeBtns) do
-		newDir += data
-	end
-	currentDir = newDir
-end
-
-for name, info in pairs(controls) do
-	local btn = info.btn
-	btn.MouseButton1Down:Connect(function()
-		activeBtns[name] = info[2]
-		updateDir()
-	end)
-	btn.MouseButton1Up:Connect(function()
-		activeBtns[name] = nil
-		updateDir()
-	end)
-end
-
-flyBtn.MouseButton1Click:Connect(function()
-	flying = not flying
-	if flying then
-		flyBtn.Text = "Unfly"
-		controlFrame.Visible = true
-		velocity.Parent = humanoidRootPart
-		gyro.Parent = humanoidRootPart
-		game:GetService("RunService"):BindToRenderStep("Fly", Enum.RenderPriority.Input.Value, function()
-			velocity.Velocity = (workspace.CurrentCamera.CFrame:VectorToWorldSpace(currentDir) * 50)
-			gyro.CFrame = workspace.CurrentCamera.CFrame
-		end)
-	else
-		flyBtn.Text = "Fly"
-		controlFrame.Visible = false
-		velocity.Parent = nil
-		gyro.Parent = nil
-		game:GetService("RunService"):UnbindFromRenderStep("Fly")
-		currentDir = Vector3.new(0, 0, 0)
-		activeBtns = {}
-	end
 end)
