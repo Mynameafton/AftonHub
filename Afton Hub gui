@@ -22,6 +22,7 @@ background.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 background.Active = true
 background.Draggable = true
 background.Visible = false
+background.BackgroundTransparency = 1 -- เริ่มต้นจาง
 background.Parent = screenGui
 
 -- หัวข้อ
@@ -34,6 +35,34 @@ title.TextColor3 = Color3.fromRGB(0, 100, 0)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.Parent = background
+
+-- อนิเมชั่นหัวข้อโหลดเข้า
+local TweenService = game:GetService("TweenService")
+title.TextTransparency = 1
+title.TextStrokeTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 0)
+
+local tweenInfo = TweenInfo.new(
+    1,
+    Enum.EasingStyle.Quad,
+    Enum.EasingDirection.Out
+)
+
+local goal = {
+    TextTransparency = 0,
+    TextStrokeTransparency = 0,
+    Size = UDim2.new(1, 0, 0, 40)
+}
+
+local tween = TweenService:Create(title, tweenInfo, goal)
+background:GetPropertyChangedSignal("Visible"):Connect(function()
+    if background.Visible then
+        title.Size = UDim2.new(1, 0, 0, 0)
+        title.TextTransparency = 1
+        title.TextStrokeTransparency = 1
+        tween:Play()
+    end
+end)
 
 -- ช่องกรอก Speed
 local speedBox = Instance.new("TextBox")
@@ -75,8 +104,15 @@ jumpBtn.Font = Enum.Font.GothamBold
 jumpBtn.TextScaled = true
 jumpBtn.Parent = background
 
+-- สร้างเสียงคลิกสำหรับปุ่ม
+local clickSound = Instance.new("Sound")
+clickSound.SoundId = "rbxassetid://9083627113" -- เสียงคลิกเบา ๆ
+clickSound.Volume = 1
+clickSound.Parent = screenGui
+
 -- ทำงานปุ่ม Speed
 speedBtn.MouseButton1Click:Connect(function()
+	clickSound:Play()  -- เล่นเสียงคลิก
 	local speed = tonumber(speedBox.Text)
 	if speed and game.Players.LocalPlayer.Character then
 		game.Players.LocalPlayer.Character:WaitForChild("Humanoid").WalkSpeed = speed
@@ -85,6 +121,7 @@ end)
 
 -- ทำงานปุ่ม Jump
 jumpBtn.MouseButton1Click:Connect(function()
+	clickSound:Play()  -- เล่นเสียงคลิก
 	local jump = tonumber(jumpBox.Text)
 	if jump and game.Players.LocalPlayer.Character then
 		local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
@@ -93,10 +130,25 @@ jumpBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- เปิด/ปิด GUI
+-- เปิด/ปิด GUI พร้อมอนิเมชั่น
 local guiVisible = false
+local tweenGuiShow = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 0})
+local tweenGuiHide = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 1})
+
 toggleButton.MouseButton1Click:Connect(function()
 	guiVisible = not guiVisible
-	background.Visible = guiVisible
 	toggleButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+
+	-- เล่นเสียงคลิก
+	clickSound:Play()
+
+	if guiVisible then
+		background.Visible = true
+		background.BackgroundTransparency = 1
+		tweenGuiShow:Play()
+	else
+		tweenGuiHide:Play()
+		tweenGuiHide.Completed:Wait()
+		background.Visible = false
+	end
 end)
