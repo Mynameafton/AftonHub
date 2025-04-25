@@ -22,7 +22,7 @@ background.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 background.Active = true
 background.Draggable = true
 background.Visible = false
-background.BackgroundTransparency = 1 -- เริ่มต้นจาง
+background.BackgroundTransparency = 1
 background.Parent = screenGui
 
 -- หัวข้อ
@@ -34,35 +34,8 @@ title.Text = "Afton Hub"
 title.TextColor3 = Color3.fromRGB(0, 100, 0)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
-title.Parent = background
-
--- อนิเมชั่นหัวข้อโหลดเข้า
-local TweenService = game:GetService("TweenService")
 title.TextTransparency = 1
-title.TextStrokeTransparency = 1
-title.Size = UDim2.new(1, 0, 0, 0)
-
-local tweenInfo = TweenInfo.new(
-    1,
-    Enum.EasingStyle.Quad,
-    Enum.EasingDirection.Out
-)
-
-local goal = {
-    TextTransparency = 0,
-    TextStrokeTransparency = 0,
-    Size = UDim2.new(1, 0, 0, 40)
-}
-
-local tween = TweenService:Create(title, tweenInfo, goal)
-background:GetPropertyChangedSignal("Visible"):Connect(function()
-    if background.Visible then
-        title.Size = UDim2.new(1, 0, 0, 0)
-        title.TextTransparency = 1
-        title.TextStrokeTransparency = 1
-        tween:Play()
-    end
-end)
+title.Parent = background
 
 -- ช่องกรอก Speed
 local speedBox = Instance.new("TextBox")
@@ -73,6 +46,8 @@ speedBox.Text = ""
 speedBox.Font = Enum.Font.Gotham
 speedBox.TextScaled = true
 speedBox.ClearTextOnFocus = false
+speedBox.TextTransparency = 1
+speedBox.BackgroundTransparency = 1
 speedBox.Parent = background
 
 -- ปุ่มปรับ Speed
@@ -82,6 +57,8 @@ speedBtn.Size = UDim2.new(0.8, 0, 0, 30)
 speedBtn.Position = UDim2.new(0.1, 0, 0.42, 0)
 speedBtn.Font = Enum.Font.GothamBold
 speedBtn.TextScaled = true
+speedBtn.TextTransparency = 1
+speedBtn.BackgroundTransparency = 1
 speedBtn.Parent = background
 
 -- ช่องกรอก JumpPower
@@ -93,6 +70,8 @@ jumpBox.Text = ""
 jumpBox.Font = Enum.Font.Gotham
 jumpBox.TextScaled = true
 jumpBox.ClearTextOnFocus = false
+jumpBox.TextTransparency = 1
+jumpBox.BackgroundTransparency = 1
 jumpBox.Parent = background
 
 -- ปุ่มปรับ JumpPower
@@ -102,53 +81,119 @@ jumpBtn.Size = UDim2.new(0.8, 0, 0, 30)
 jumpBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
 jumpBtn.Font = Enum.Font.GothamBold
 jumpBtn.TextScaled = true
+jumpBtn.TextTransparency = 1
+jumpBtn.BackgroundTransparency = 1
 jumpBtn.Parent = background
 
--- สร้างเสียงคลิกสำหรับปุ่ม
+-- เสียงคลิก
 local clickSound = Instance.new("Sound")
-clickSound.SoundId = "rbxassetid://9083627113" -- เสียงคลิกเบา ๆ
+clickSound.SoundId = "rbxassetid://9083627113"
 clickSound.Volume = 1
 clickSound.Parent = screenGui
 
--- ทำงานปุ่ม Speed
+-- TweenService
+local TweenService = game:GetService("TweenService")
+
+-- แอนิเมชั่นเปิดหัวข้อ
+local titleTweenIn = TweenService:Create(title, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    TextTransparency = 0,
+    TextStrokeTransparency = 0,
+    Size = UDim2.new(1, 0, 0, 40)
+})
+
+-- ปุ่มทำงาน Speed
 speedBtn.MouseButton1Click:Connect(function()
-	clickSound:Play()  -- เล่นเสียงคลิก
-	local speed = tonumber(speedBox.Text)
-	if speed and game.Players.LocalPlayer.Character then
-		game.Players.LocalPlayer.Character:WaitForChild("Humanoid").WalkSpeed = speed
-	end
+    clickSound:Play()
+    local speed = tonumber(speedBox.Text)
+    if speed and game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character:WaitForChild("Humanoid").WalkSpeed = speed
+    end
 end)
 
--- ทำงานปุ่ม Jump
+-- ปุ่มทำงาน JumpPower
 jumpBtn.MouseButton1Click:Connect(function()
-	clickSound:Play()  -- เล่นเสียงคลิก
-	local jump = tonumber(jumpBox.Text)
-	if jump and game.Players.LocalPlayer.Character then
-		local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
-		humanoid.UseJumpPower = true
-		humanoid.JumpPower = jump
-	end
+    clickSound:Play()
+    local jump = tonumber(jumpBox.Text)
+    if jump and game.Players.LocalPlayer.Character then
+        local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+        humanoid.UseJumpPower = true
+        humanoid.JumpPower = jump
+    end
 end)
 
--- เปิด/ปิด GUI พร้อมอนิเมชั่น
+-- เปิด/ปิด GUI พร้อมแอนิเมชั่น
+local isTweening = false
 local guiVisible = false
+
 local tweenGuiShow = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 0})
 local tweenGuiHide = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 1})
 
+local tweenTitleIn = TweenService:Create(title, TweenInfo.new(0.5), {TextTransparency = 0})
+local tweenTitleOut = TweenService:Create(title, TweenInfo.new(0.5), {TextTransparency = 1})
+
+local tweenSpeedBtnIn = TweenService:Create(speedBtn, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0})
+local tweenSpeedBtnOut = TweenService:Create(speedBtn, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1})
+
+local tweenJumpBtnIn = TweenService:Create(jumpBtn, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0})
+local tweenJumpBtnOut = TweenService:Create(jumpBtn, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1})
+
+local tweenSpeedBoxIn = TweenService:Create(speedBox, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0})
+local tweenSpeedBoxOut = TweenService:Create(speedBox, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1})
+
+local tweenJumpBoxIn = TweenService:Create(jumpBox, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0})
+local tweenJumpBoxOut = TweenService:Create(jumpBox, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1})
+
 toggleButton.MouseButton1Click:Connect(function()
-	guiVisible = not guiVisible
-	toggleButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+    if isTweening then return end
+    isTweening = true
 
-	-- เล่นเสียงคลิก
-	clickSound:Play()
+    guiVisible = not guiVisible
+    toggleButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+    clickSound:Play()
 
-	if guiVisible then
-		background.Visible = true
-		background.BackgroundTransparency = 1
-		tweenGuiShow:Play()
-	else
-		tweenGuiHide:Play()
-		tweenGuiHide.Completed:Wait()
-		background.Visible = false
-	end
+    if guiVisible then
+        background.Visible = true
+        background.BackgroundTransparency = 1
+        title.TextTransparency = 1
+        speedBtn.TextTransparency = 1
+        jumpBtn.TextTransparency = 1
+        speedBox.TextTransparency = 1
+        jumpBox.TextTransparency = 1
+        speedBtn.BackgroundTransparency = 1
+        jumpBtn.BackgroundTransparency = 1
+        speedBox.BackgroundTransparency = 1
+        jumpBox.BackgroundTransparency = 1
+
+        tweenGuiShow:Play()
+        tweenTitleIn:Play()
+        tweenSpeedBtnIn:Play()
+        tweenJumpBtnIn:Play()
+        tweenSpeedBoxIn:Play()
+        tweenJumpBoxIn:Play()
+
+        task.delay(0.5, function()
+            isTweening = false
+        end)
+    else
+        tweenTitleOut:Play()
+        tweenSpeedBtnOut:Play()
+        tweenJumpBtnOut:Play()
+        tweenSpeedBoxOut:Play()
+        tweenJumpBoxOut:Play()
+        tweenGuiHide:Play()
+
+        tweenGuiHide.Completed:Wait()
+        background.Visible = false
+        isTweening = false
+    end
+end)
+
+-- แสดงอนิเมชั่นโหลดเมื่อ GUI ปรากฏ
+background:GetPropertyChangedSignal("Visible"):Connect(function()
+    if background.Visible then
+        title.Size = UDim2.new(1, 0, 0, 0)
+        title.TextTransparency = 1
+        title.TextStrokeTransparency = 1
+        titleTweenIn:Play()
+    end
 end)
