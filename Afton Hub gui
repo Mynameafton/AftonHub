@@ -114,7 +114,6 @@ local currentDir = Vector3.new(0, 0, 0)
 local activeBtns = {}
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
 local velocity = Instance.new("BodyVelocity")
@@ -182,23 +181,15 @@ flyBtn.MouseButton1Click:Connect(function()
 	if flying then
 		flyBtn.Text = "Unfly"
 		controlFrame.Visible = true
-		humanoid.PlatformStand = true
 		velocity.Parent = humanoidRootPart
 		gyro.Parent = humanoidRootPart
 		game:GetService("RunService"):BindToRenderStep("Fly", Enum.RenderPriority.Input.Value, function()
-			local camCF = workspace.CurrentCamera.CFrame
-			local direction = camCF:VectorToWorldSpace(currentDir) * 50
-			velocity.Velocity = direction
-
-			-- หมุนตัวละครตามกล้อง (เฉพาะแนว Y)
-			local _, y, _ = camCF:ToEulerAnglesYXZ()
-			humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position) * CFrame.Angles(0, y, 0)
-			gyro.CFrame = camCF
+			velocity.Velocity = (workspace.CurrentCamera.CFrame:VectorToWorldSpace(currentDir) * 50)
+			gyro.CFrame = workspace.CurrentCamera.CFrame
 		end)
 	else
 		flyBtn.Text = "Fly"
 		controlFrame.Visible = false
-		humanoid.PlatformStand = false
 		velocity.Parent = nil
 		gyro.Parent = nil
 		game:GetService("RunService"):UnbindFromRenderStep("Fly")
