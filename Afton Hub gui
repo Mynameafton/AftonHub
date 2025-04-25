@@ -75,6 +75,42 @@ jumpBtn.Font = Enum.Font.GothamBold
 jumpBtn.TextScaled = true
 jumpBtn.Parent = background
 
+-- ปุ่ม Infinite Jump
+local infJumpBtn = Instance.new("TextButton")
+infJumpBtn.Text = "Infinite Jump"
+infJumpBtn.Size = UDim2.new(0.8, 0, 0, 30)
+infJumpBtn.Position = UDim2.new(0.1, 0, 1.0, -30)
+infJumpBtn.Font = Enum.Font.GothamBold
+infJumpBtn.TextScaled = true
+infJumpBtn.Parent = background
+
+-- ฟังก์ชั่นสำหรับ Infinite Jump
+local infiniteJumpEnabled = false
+
+-- ติดตามการกระโดดของตัวละคร
+local function onJumpRequest()
+    if infiniteJumpEnabled then
+        local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Physics then
+            humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            humanoid.Jump = true
+        end
+    end
+end
+
+-- เชื่อมโยงกับปุ่ม Infinite Jump
+infJumpBtn.MouseButton1Click:Connect(function()
+    infiniteJumpEnabled = not infiniteJumpEnabled
+    infJumpBtn.Text = infiniteJumpEnabled and "Disable Jump" or "Infinite Jump"
+    if infiniteJumpEnabled then
+        -- เปิดใช้งาน Infinite Jump
+        game:GetService("UserInputService").JumpRequest:Connect(onJumpRequest)
+    else
+        -- ปิดการใช้งาน Infinite Jump
+        game:GetService("UserInputService").JumpRequest:Disconnect(onJumpRequest)
+    end
+end)
+
 -- ทำงานปุ่ม Speed
 speedBtn.MouseButton1Click:Connect(function()
 	local speed = tonumber(speedBox.Text)
